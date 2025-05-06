@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from gomoku import Gomoku, GomokuBot, GomokuPos, BOARD_SIZE
-
+from PIL import Image, ImageTk 
 
 
 class GomokuGUI(tk.Toplevel):
@@ -101,35 +101,62 @@ class GomokuGUI(tk.Toplevel):
             self.bot.name = 'O'
 
 
+
 class GomokuSelector(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Gomoku Welcome")
+        self.geometry("750x500")
+
+       
+        original_image = Image.open("background.jpg")  
+        resized_image = original_image.resize((750, 500))
+        self.bg_image = ImageTk.PhotoImage(resized_image)
+
+        self.bg_label = tk.Label(self, image=self.bg_image)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
         self.create_widgets()
         self.place_widgets()
         self.associate_events()
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
 
     def create_widgets(self):
-        self.fra_user_options = tk.Frame(self)
+        
+        self.fra_user_options = tk.Frame(self, bg="#ffffff", bd=2, relief="ridge")
 
         self.lbl_who_go_first = ttk.Label(self.fra_user_options, text="Who go first:")
         self.cb_who_go_first = ttk.Combobox(self.fra_user_options, values=('YOU', 'BOT'), state='readonly')
         self.cb_who_go_first.set('BOT')
-
         self.btn_play = ttk.Button(self.fra_user_options, text="Play")
 
     def place_widgets(self):
-        self.lbl_who_go_first.grid(row=2, column=0)
-        self.cb_who_go_first.grid(row=3, column=0)
-        self.btn_play.grid(row=4, column=0)
-        self.fra_user_options.grid(row=1, column=0)
+       
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(2, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        self.fra_user_options.grid(row=1, column=0, padx=20, pady=20)
+
+        self.lbl_who_go_first.grid(row=0, column=0, pady=(0, 10))
+        self.cb_who_go_first.grid(row=1, column=0, pady=(0, 10))
+        self.btn_play.grid(row=2, column=0)
 
     def associate_events(self):
         self.btn_play.bind("<Button-1>", lambda e: self.btn_play_Button_1())
 
     def btn_play_Button_1(self):
-        tic_tac_toe_gui = GomokuGUI(self, self.cb_who_go_first.get())
-        tic_tac_toe_gui.grab_set()
+        gomoku_gui = GomokuGUI(self, self.cb_who_go_first.get())
+        gomoku_gui.grab_set()         
+        gomoku_gui.focus_force()      
+        gomoku_gui.lift()           
+        gomoku_gui.attributes('-topmost', True)  
+        gomoku_gui.after(100, lambda: gomoku_gui.attributes('-topmost', False)) 
+        self.withdraw()              
+    def on_close(self):
+        self.destroy()
+        self.master.destroy() 
 
 
 if __name__ == "__main__":
